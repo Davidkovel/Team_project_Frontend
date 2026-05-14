@@ -1,0 +1,28 @@
+.timer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.timer-bar-wrapper {
+  flex: 1;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.timer-bar {
+  height: 100%;
+  background: #222;
+  border-radius: 3px;
+  transition: width 1s linear;
+}
+
+.timer-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  min-width: 48px;
+  text-align: right;
+  color: #333;
+}
