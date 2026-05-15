@@ -160,7 +160,7 @@ function AdminPanel() {
 
                                 <h3>test@gmail.com</h3>
 
-                                <p>Користувач</p>
+                                <p>Користувачь</p>
 
                                 <button className="main-btn">
                                     Профіль
