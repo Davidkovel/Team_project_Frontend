@@ -1,95 +1,316 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { authAPI } from "../api/api";
-import "../styles/AuthPages.css";
+// src/pages/AdminPanel.jsx
 
-export default function LoginPage() {
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [errors, setErrors] = useState({});
-  const navigate = useNavigate();
+import React, { useState } from "react";
+import "../styles/AdminPanel.css";
 
-  const validate = () => {
-    const newErrors = {};
-    if (!form.email.trim()) newErrors.email = "Введіть email";
-    if (!form.password) newErrors.password = "Введіть пароль";
-    return newErrors;
-  };
+function AdminPanel() {
+  const [activePage, setActivePage] = useState("dashboard");
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
+  const renderPage = () => {
+    switch (activePage) {
+      case "dashboard":
+        return (
+            <>
+              <h1 className="page-title">📊 Dashboard</h1>
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const newErrors = validate();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
+              <div className="cards">
+                <div className="card">
+                  <h3>Всього опитувань</h3>
+                  <p>12</p>
+                </div>
 
-    try {
-      const response = await authAPI.login({
-        email: form.email,
-        password: form.password,
-      });
+                <div className="card">
+                  <h3>Користувачі</h3>
+                  <p>248</p>
+                </div>
 
-      if (!response.ok) throw new Error("Невірний email або пароль");
+                <div className="card">
+                  <h3>Голосів</h3>
+                  <p>1430</p>
+                </div>
 
-      const data = await response.json();
-      localStorage.setItem("token", data.token);
-      navigate("/surveys");
-    } catch (err) {
-      setErrors({ general: err.message });
+                <div className="card">
+                  <h3>Активні</h3>
+                  <p>5</p>
+                </div>
+              </div>
+
+              <div className="content-box">
+                <h2>Остання активність</h2>
+
+                <div className="activity">
+                  <p>✅ Створено нове опитування</p>
+                  <span>2 хв тому</span>
+                </div>
+
+                <div className="activity">
+                  <p>👤 Зареєстровано нового користувача</p>
+                  <span>10 хв тому</span>
+                </div>
+
+                <div className="activity">
+                  <p>📊 Оновлено результати голосування</p>
+                  <span>30 хв тому</span>
+                </div>
+              </div>
+            </>
+        );
+
+      case "surveys":
+        return (
+            <>
+              <div className="top-section">
+                <h1 className="page-title">🗳 Опитування</h1>
+
+                <button className="main-btn">
+                  + Створити
+                </button>
+              </div>
+
+              <div className="table-box">
+                <table>
+                  <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Назва</th>
+                    <th>Статус</th>
+                    <th>Голоси</th>
+                    <th>Дії</th>
+                  </tr>
+                  </thead>
+
+                  <tbody>
+                  <tr>
+                    <td>1</td>
+                    <td>Улюблена мова програмування</td>
+                    <td>
+                      <span className="status active">
+                        Активне
+                      </span>
+                    </td>
+                    <td>120</td>
+                    <td>
+                      <button className="edit-btn">
+                        Редагувати
+                      </button>
+
+                      <button className="delete-btn">
+                        Видалити
+                      </button>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>2</td>
+                    <td>Найкращий фреймворк</td>
+                    <td>
+                      <span className="status ended">
+                        Завершене
+                      </span>
+                    </td>
+                    <td>87</td>
+                    <td>
+                      <button className="edit-btn">
+                        Редагувати
+                      </button>
+
+                      <button className="delete-btn">
+                        Видалити
+                      </button>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </>
+        );
+
+      case "users":
+        return (
+            <>
+              <h1 className="page-title">👤 Користувачі</h1>
+
+              <div className="users-grid">
+                <div className="user-card">
+                  <div className="avatar">A</div>
+
+                  <h3>admin@gmail.com</h3>
+
+                  <p>Адміністратор</p>
+
+                  <button className="main-btn">
+                    Переглянути
+                  </button>
+                </div>
+
+                <div className="user-card">
+                  <div className="avatar">U</div>
+
+                  <h3>user@gmail.com</h3>
+
+                  <p>Користувач</p>
+
+                  <button className="main-btn">
+                    Переглянути
+                  </button>
+                </div>
+
+                <div className="user-card">
+                  <div className="avatar">T</div>
+
+                  <h3>test@gmail.com</h3>
+
+                  <p>Користувач</p>
+
+                  <button className="main-btn">
+                    Переглянути
+                  </button>
+                </div>
+              </div>
+            </>
+        );
+
+      case "results":
+        return (
+            <>
+              <h1 className="page-title">📈 Результати</h1>
+
+              <div className="results-grid">
+                <div className="result-card">
+                  <h3>React</h3>
+
+                  <div className="progress">
+                    <div
+                        className="progress-fill"
+                        style={{ width: "65%" }}
+                    ></div>
+                  </div>
+
+                  <p>65%</p>
+                </div>
+
+                <div className="result-card">
+                  <h3>Vue</h3>
+
+                  <div className="progress">
+                    <div
+                        className="progress-fill"
+                        style={{ width: "35%" }}
+                    ></div>
+                  </div>
+
+                  <p>35%</p>
+                </div>
+
+                <div className="result-card">
+                  <h3>Angular</h3>
+
+                  <div className="progress">
+                    <div
+                        className="progress-fill"
+                        style={{ width: "20%" }}
+                    ></div>
+                  </div>
+
+                  <p>20%</p>
+                </div>
+              </div>
+            </>
+        );
+
+      case "settings":
+        return (
+            <>
+              <h1 className="page-title">⚙ Налаштування</h1>
+
+              <div className="settings-box">
+                <div className="setting-item">
+                  <label>Тема</label>
+
+                  <select>
+                    <option>Dark</option>
+                    <option>Light</option>
+                  </select>
+                </div>
+
+                <div className="setting-item">
+                  <label>Мова</label>
+
+                  <select>
+                    <option>Українська</option>
+                    <option>English</option>
+                  </select>
+                </div>
+
+                <div className="setting-item">
+                  <label>Сповіщення</label>
+
+                  <input type="checkbox" checked readOnly />
+                </div>
+
+                <button className="save-btn">
+                  Зберегти
+                </button>
+              </div>
+            </>
+        );
+
+      default:
+        return <h1>Dashboard</h1>;
     }
   };
 
   return (
-    <div className="auth-wrapper">
-      <div className="auth-card">
-        <h1 className="auth-title">Вхід</h1>
+      <div className="admin-panel">
+        {/* Sidebar */}
+        <aside className="sidebar">
+          <div>
+            <h2 className="logo">Admin Panel</h2>
 
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="field">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="user@example.com"
-              value={form.email}
-              onChange={handleChange}
-              className={errors.email ? "input-error" : ""}
-            />
-            {errors.email && <span className="error">{errors.email}</span>}
+            <ul className="menu">
+              <li
+                  onClick={() => setActivePage("dashboard")}
+              >
+                📊 Dashboard
+              </li>
+
+              <li
+                  onClick={() => setActivePage("surveys")}
+              >
+                🗳 Опитування
+              </li>
+
+              <li
+                  onClick={() => setActivePage("users")}
+              >
+                👤 Користувачі
+              </li>
+
+              <li
+                  onClick={() => setActivePage("results")}
+              >
+                📈 Результати
+              </li>
+
+              <li
+                  onClick={() => setActivePage("settings")}
+              >
+                ⚙ Налаштування
+              </li>
+            </ul>
           </div>
 
-          <div className="field">
-            <label htmlFor="password">Пароль</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Ваш пароль"
-              value={form.password}
-              onChange={handleChange}
-              className={errors.password ? "input-error" : ""}
-            />
-            {errors.password && <span className="error">{errors.password}</span>}
-          </div>
-
-          {errors.general && <span className="error">{errors.general}</span>}
-
-          <button type="submit" className="auth-btn">
-            Увійти
+          <button className="logout-btn">
+            Вийти
           </button>
-        </form>
+        </aside>
 
-        <p className="auth-footer">
-          Немає акаунту? <a href="/register">Зареєструватись</a>
-        </p>
+        {/* Content */}
+        <main className="content">
+          {renderPage()}
+        </main>
       </div>
-    </div>
   );
 }
+
+export default AdminPanel;
