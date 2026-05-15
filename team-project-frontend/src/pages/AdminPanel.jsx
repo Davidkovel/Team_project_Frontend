@@ -221,7 +221,7 @@ function AdminPanel() {
             case "settings":
                 return (
                     <>
-                        <h1 className="page-title">⚙ Налаштування</h1>
+                        <h1 className="page-title"> Налаштування</h1>
 
                         <div className="settings-box">
                             <div className="setting-item">
