@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { authAPI } from "../api/api";
 import "../styles/AuthPages.css";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
   const validate = () => {
     const newErrors = {};
@@ -18,15 +21,28 @@ export default function LoginPage() {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validate();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    console.log("Логін:", form);
-    // API call for login would go here
+
+    try {
+      const response = await authAPI.login({
+        email: form.email,
+        password: form.password,
+      });
+
+      if (!response.ok) throw new Error("Невірний email або пароль");
+
+      const data = await response.json();
+      localStorage.setItem("token", data.token);
+      navigate("/surveys");
+    } catch (err) {
+      setErrors({ general: err.message });
+    }
   };
 
   return (
@@ -62,6 +78,8 @@ export default function LoginPage() {
             />
             {errors.password && <span className="error">{errors.password}</span>}
           </div>
+
+          {errors.general && <span className="error">{errors.general}</span>}
 
           <button type="submit" className="auth-btn">
             Увійти

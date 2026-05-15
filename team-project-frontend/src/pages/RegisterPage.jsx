@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { authAPI } from "../api/api";
 import "../styles/AuthPages.css";
 
 export default function RegisterPage() {
@@ -36,15 +37,26 @@ export default function RegisterPage() {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validate();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    console.log("Реєстрація:", form);
-    setSubmitted(true);
+
+    try {
+      const response = await authAPI.register({
+        email: form.email,
+        password: form.password,
+      });
+
+      if (!response.ok) throw new Error("Помилка реєстрації");
+
+      setSubmitted(true);
+    } catch (err) {
+      setErrors({ general: err.message });
+    }
   };
 
   if (submitted) {
@@ -121,6 +133,8 @@ export default function RegisterPage() {
               <span className="error">{errors.confirmPassword}</span>
             )}
           </div>
+
+          {errors.general && <span className="error">{errors.general}</span>}
 
           <button type="submit" className="auth-btn">
             Зареєструватись
