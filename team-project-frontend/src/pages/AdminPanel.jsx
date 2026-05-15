@@ -228,8 +228,8 @@ function AdminPanel() {
                                 <label>Тема</label>
 
                                 <select>
-                                    <option>Dark</option>
-                                    <option>Light</option>
+                                    <option>темна</option>
+                                    <option>світла</option>
                                 </select>
                             </div>
 
