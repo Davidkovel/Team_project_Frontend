@@ -1,69 +1,54 @@
+import React from "react";
+
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { surveysAPI } from "../api/api";
+import { useNavigate, useParams } from "react-router-dom";
+
+import api from "../api/api";
+
+import { ResultBars } from "../components/ResultsBar";
+import {Spinner, Alert} from "../components/Helpers";
+
 import "../styles/ResultsPage.css";
 
 export default function ResultsPage() {
-  const { id } = useParams();
-  const [results, setResults] = useState(null);
+  const [data, setData] = useState(null);
+  const [survey, setSurvey] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { id } = useParams();
 
+  const navigate = useNavigate();
+ 
   useEffect(() => {
-    const fetchResults = async () => {
-      try {
-        const response = await surveysAPI.getResults(id);
-        if (!response.ok) throw new Error("Не вдалось завантажити результати");
-        const data = await response.json();
-        setResults(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchResults();
+    Promise.all([api.surveys.results(id), api.surveys.getById(id)])
+      .then(([res, s]) => { setData(res); setSurvey(s); setLoading(false); })
+      .catch(e => { setError(e.message); setLoading(false); });
   }, [id]);
-
-  if (loading) return <div className="results-status">Завантаження...</div>;
-  if (error) return <div className="results-status results-status--error">{error}</div>;
-  if (!results) return null;
-
+ 
+  if (loading) return <div className="centered"><Spinner /></div>;
+  if (error)   return <div className="page"><Alert msg={error} /></div>;
+ 
   return (
-    <div className="results-wrapper">
-      <h1 className="results-title">{results.title}</h1>
-      <p className="results-total">Всього голосів: {results.totalVotes}</p>
-
-      <div className="results-list">
-        {results.questions?.map((question) => (
-          <div key={question.id} className="result-question">
-            <h2 className="result-question__text">{question.text}</h2>
-            <div className="result-options">
-              {question.options?.map((option) => {
-                const percent =
-                  results.totalVotes > 0
-                    ? Math.round((option.votes / results.totalVotes) * 100)
-                    : 0;
-                return (
-                  <div key={option.id} className="result-option">
-                    <div className="result-option__header">
-                      <span>{option.text}</span>
-                      <span>{percent}% ({option.votes} голосів)</span>
-                    </div>
-                    <div className="result-option__bar-wrapper">
-                      <div
-                        className="result-option__bar"
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="page">
+      <button className="btn btn-ghost btn-sm mb-16" onClick={() => navigate("/")}>← До опитувань</button>
+      <h1>{survey?.title}</h1>
+      <p className="meta" style={{ marginBottom: 24 }}>{survey?.description}</p>
+ 
+      {(Array.isArray(data) ? data : []).map((q, i) => (
+        <div key={q.id} className="card-flat" style={{ marginBottom: 16 }}>
+          <h3 style={{ marginBottom: 16 }}>
+            <span className="meta">Питання {i + 1} — </span>{q.text}
+          </h3>
+          <ResultBars question={q} />
+        </div>
+      ))}
+ 
+      {(!data || data.length === 0) && (
+        <div className="centered">
+          <div style={{ fontSize: 48 }}>📊</div>
+          <p className="meta" style={{ marginTop: 12 }}>Голосів поки немає</p>
+        </div>
+      )}
     </div>
   );
 }

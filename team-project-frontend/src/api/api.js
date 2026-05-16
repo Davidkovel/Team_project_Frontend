@@ -1,100 +1,45 @@
-const BASE_URL = "https://votingapp.bluegrass-91a5f309.polandcentral.azurecontainerapps.io";
+const BASE_URL = "http://localhost:8080";
 
-const getHeaders = () => ({
-  "Content-Type": "application/json",
-  Authorization: `Bearer ${localStorage.getItem("token")}`,
-});
-
-export const authAPI = {
-  register: (data) =>
-    fetch(`${BASE_URL}/api/Auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    }),
-
-  login: (data) =>
-    fetch(`${BASE_URL}/api/Auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    }),
+function getHeaders() {
+  const token = localStorage.getItem("voting_token");
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+ 
+async function apiFetch(url, options = {}) {
+  const res = await fetch(`${BASE_URL}${url}`, { headers: getHeaders(), ...options });
+  if (res.status === 204) return null;
+  const text = await res.text();
+  let json;
+  try { json = JSON.parse(text); } catch { json = text; }
+  if (!res.ok) throw new Error(json?.message || json?.title || json || `HTTP ${res.status}`);
+  return json;
+}
+ 
+const api = {
+  auth: {
+    register: (d) => apiFetch("/api/Auth/register", { method: "POST", body: JSON.stringify(d) }),
+    login:    (d) => apiFetch("/api/Auth/login",    { method: "POST", body: JSON.stringify(d) }),
+  },
+  surveys: {
+    getAll:     (p=1,ps=20) => apiFetch(`/api/Surveys?page=${p}&pageSize=${ps}`),
+    getById:    (id)        => apiFetch(`/api/Surveys/${id}`),
+    create:     (d)         => apiFetch("/api/Surveys",        { method: "POST",   body: JSON.stringify(d) }),
+    update:     (id, d)     => apiFetch(`/api/Surveys/${id}`,  { method: "PUT",    body: JSON.stringify(d) }),
+    delete:     (id)        => apiFetch(`/api/Surveys/${id}`,  { method: "DELETE" }),
+    addQuestion:(sid, d)    => apiFetch(`/api/Surveys/${sid}/questions`, { method: "POST", body: JSON.stringify(d) }),
+    addOption:  (qid, d)    => apiFetch(`/api/Surveys/questions/${qid}/options`, { method: "POST", body: JSON.stringify(d) }),
+    vote:       (qid, d)    => apiFetch(`/api/Surveys/questions/${qid}/vote`,    { method: "POST", body: JSON.stringify(d) }),
+    results:    (id)        => apiFetch(`/api/Surveys/${id}/results`),
+  },
+  users: {
+    getAll:  ()   => apiFetch("/api/Users"),
+    block:   (id) => apiFetch(`/api/Users/block/${id}`,   { method: "POST" }),
+    unblock: (id) => apiFetch(`/api/Users/unblock/${id}`, { method: "POST" }),
+    delete:  (id) => apiFetch(`/api/Users/${id}`,         { method: "DELETE" }),
+  },
 };
-
-export const surveysAPI = {
-  getAll: () =>
-    fetch(`${BASE_URL}/api/Surveys?page=1&pageSize=20`, { headers: getHeaders() }),
-
-  getById: (id) =>
-    fetch(`${BASE_URL}/api/Surveys/${id}`, { headers: getHeaders() }),
-
-  create: (data) =>
-    fetch(`${BASE_URL}/api/Surveys`, {
-      method: "POST",
-      headers: getHeaders(),
-      body: JSON.stringify(data),
-    }),
-
-  update: (id, data) =>
-    fetch(`${BASE_URL}/api/Surveys/${id}`, {
-      method: "PUT",
-      headers: getHeaders(),
-      body: JSON.stringify(data),
-    }),
-
-  delete: (id) =>
-    fetch(`${BASE_URL}/api/Surveys/${id}`, {
-      method: "DELETE",
-      headers: getHeaders(),
-    }),
-
-  addQuestion: (surveyId, data) =>
-    fetch(`${BASE_URL}/api/Surveys/${surveyId}/questions`, {
-      method: "POST",
-      headers: getHeaders(),
-      body: JSON.stringify(data),
-    }),
-
-  addOption: (questionId, data) =>
-    fetch(`${BASE_URL}/api/Surveys/questions/${questionId}/options`, {
-      method: "POST",
-      headers: getHeaders(),
-      body: JSON.stringify(data),
-    }),
-
-  vote: (questionId, data) =>
-    fetch(`${BASE_URL}/api/Surveys/questions/${questionId}/vote`, {
-      method: "POST",
-      headers: getHeaders(),
-      body: JSON.stringify(data),
-    }),
-
-  getResults: (id) =>
-    fetch(`${BASE_URL}/api/Surveys/${id}/results`, { headers: getHeaders() }),
-
-  getStatistics: (id) =>
-    fetch(`${BASE_URL}/api/Surveys/${id}/statistics`, { headers: getHeaders() }),
-};
-
-export const usersAPI = {
-  getAll: () =>
-    fetch(`${BASE_URL}/api/Users`, { headers: getHeaders() }),
-
-  block: (id) =>
-    fetch(`${BASE_URL}/api/Users/block/${id}`, {
-      method: "POST",
-      headers: getHeaders(),
-    }),
-
-  unblock: (id) =>
-    fetch(`${BASE_URL}/api/Users/unblock/${id}`, {
-      method: "POST",
-      headers: getHeaders(),
-    }),
-
-  delete: (id) =>
-    fetch(`${BASE_URL}/api/Users/${id}`, {
-      method: "DELETE",
-      headers: getHeaders(),
-    }),
-};
+ 
+export default api;
